@@ -13,7 +13,7 @@ import (
 
 func main() {
 	fmt.Println("== Windows Provisioning Tool ==")
-	
+
 	fmt.Println("Loading embedded configuration...")
 	cfg, err := config.LoadBytes(provisioner.EmbeddedConfig)
 
@@ -52,39 +52,68 @@ func main() {
 		fmt.Println("Scoop is already installed.")
 	}
 
+	if err := scoop.ConfigureGitHubToken(); err != nil {
+		fmt.Printf("Warning: Failed to configure GitHub token: %v\n", err)
+	}
+
 	fmt.Println("--------------------------------")
-	
-	// Phase 2: Add buckets and install apps
+
+	// Phase 2: Add buckets
+	buckets := make(map[string]struct{})
 	for _, app := range cfg.Apps {
-		fmt.Printf("Processing %s...\n", app.Name)
-
-		// Add bucket if specified
 		if app.Bucket != "" && app.Bucket != "main" {
-			fmt.Printf(" -> Adding bucket: %s\n", app.Bucket)
-			if err := scoop.AddBucket(app.Bucket); err != nil {
-				fmt.Printf(" -> [WARN] Failed to add bucket %s: %v\n", app.Bucket, err)
+			buckets[app.Bucket] = struct{}{}
+		}
+	}
+
+	if len(buckets) > 0 {
+		fmt.Printf("Adding required buckets (%d)...\n", len(buckets))
+		for b := range buckets {
+			fmt.Printf(" -> Adding bucket: %s\n", b)
+			if err := scoop.AddBucket(b); err != nil {
+				fmt.Printf(" -> [WARN] Failed to add bucket %s: %v\n", b, err)
 			}
+		}
+		fmt.Println("--------------------------------")
+	}
+
+	// Phase 3: Install Scoop apps
+	fmt.Printf("Installing %d Scoop apps...\n", len(cfg.Apps))
+	for _, app := range cfg.Apps {
+		fmt.Printf(" -> Processing %s...\n", app.Name)
+		if err := scoop.InstallApp(app.Name); err != nil {
+			fmt.Printf("    [ERROR] Failed to install %s: %v\n", app.Name, err)
+			continue
 		}
 
-		// Install app
-		status := "local"
-		if app.Global {
-			status = "GLOBAL"
+		fmt.Printf("    [OK] Successfully installed %s.\n", app.Name)
+		if !app.DesktopShortcut {
+			continue
 		}
-		fmt.Printf(" -> Installing %s (%s)...\n", app.Name, status)
-		if err := scoop.InstallApp(app.Name, app.Global); err != nil {
-			fmt.Printf(" -> [ERROR] Failed to install %s: %v\n", app.Name, err)
-		} else {
-			fmt.Printf(" -> Successfully installed %s.\n", app.Name)
-			if cfg.CreateDesktopShortcuts {
-				if err := scoop.CreateDesktopShortcuts(app.Name); err == nil {
-					fmt.Printf(" -> [INFO] Checked/Created desktop shortcuts for %s.\n", app.Name)
-				}
-			}
+
+		fmt.Printf("    Creating desktop shortcut for %s...\n", app.Name)
+		if err := scoop.CreateDesktopShortcut(app.Name); err != nil {
+			fmt.Printf("    [WARN] Failed to create desktop shortcut for %s: %v\n", app.Name, err)
 		}
 	}
 
 	fmt.Println("--------------------------------")
+
+	// Phase 4: Run Post-Setup Commands
+	if len(cfg.PostSetupCommands) > 0 {
+		fmt.Printf("Running %d post-setup commands...\n", len(cfg.PostSetupCommands))
+		for _, cmdStr := range cfg.PostSetupCommands {
+			fmt.Printf(" -> Executing: %s\n", cmdStr)
+			cmd := exec.Command("powershell.exe", "-NoProfile", "-Command", cmdStr)
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			if err := cmd.Run(); err != nil {
+				fmt.Printf(" -> [WARN] Post-setup command failed: %v\n", err)
+			}
+		}
+		fmt.Println("--------------------------------")
+	}
+
 	fmt.Println("Provisioning complete!")
 	waitAndExit(0)
 }

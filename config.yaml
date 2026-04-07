@@ -1,47 +1,76 @@
 setup_commands:
-  - "wsl --install -d Ubuntu"
-  - 'Invoke-WebRequest -Uri "https://aka.ms/vs/stable/vs_buildtools.exe" -OutFile "$env:TEMP\vs_buildtools.exe"; Start-Process -FilePath "$env:TEMP\vs_buildtools.exe" -ArgumentList "--passive --wait --norestart --nocache --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended" -Wait'
+  - Invoke-WebRequest -Uri "https://aka.ms/vs/stable/vs_buildtools.exe" -OutFile "$env:TEMP\vs_buildtools.exe"; Start-Process -FilePath "$env:TEMP\vs_buildtools.exe" -ArgumentList "--passive --wait --norestart --nocache --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended" -Wait
 
-create_desktop_shortcuts: true
+post_setup_commands:
+  - if (!(Get-Command gemini -ErrorAction SilentlyContinue)) {
+        Write-Host "Installing @google/gemini-cli..."
+        pnpm add -g @google/gemini-cli
+    }
+  - if (!(Get-Command codex -ErrorAction SilentlyContinue)) {
+        Write-Host "Installing @openai/codex..."
+        pnpm add -g @openai/codex
+    }
 
 apps:
   - name: git
   - name: 7zip
   - name: clash-verge-rev
     bucket: extras
-    global: true
-  - name: everything
-    bucket: extras
+    desktop_shortcut: true
+
   - name: pwsh
   - name: windows-terminal
     bucket: extras
+    desktop_shortcut: true
   - name: k-lite-codec-pack-basic-np
-    bucket: nonportable
-  - name: googlechrome
     bucket: extras
-  - name: firefox
+  - name: everything
     bucket: extras
+
   - name: Readest
     bucket: extras
+    desktop_shortcut: true
+  - name: googlechrome
+    bucket: extras
+    desktop_shortcut: true
+  - name: firefox
+    bucket: extras
+    desktop_shortcut: true
   - name: obsidian
     bucket: extras
-  - name: ripgrep
-  - name: eza
-    bucket: extras
+    desktop_shortcut: true
+
   - name: localsend
     bucket: extras
+    desktop_shortcut: true
   - name: enpass
     bucket: extras
   - name: stranslate
     bucket: extras
+    desktop_shortcut: true
+
   # languages
   - name: rustup
   - name: flutter
   - name: python
+  - name: nodejs
+  - name: go
+  - name: openjdk
+    bucket: java
+  # dev tools
+  - name: pnpm
+  - name: uv
+  - name: ruff
+  - name: protobuf
+    bucket: extras
+  - name: ripgrep
+  - name: eza
+    bucket: extras
   # IDEs
   - name: zed
-  - name: vscode
+    desktop_shortcut: true
+  # - name: vscode
+  #   bucket: extras
+  - name: idea
     bucket: extras
-  - name: idea-ultimate
-    bucket: extras
-
+    desktop_shortcut: true
