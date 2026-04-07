@@ -100,7 +100,7 @@ func InstallApp(name string) error {
 	for _, line := range lines {
 		trimmed := strings.TrimSpace(line)
 		if strings.HasPrefix(trimmed, "ERROR:") || strings.HasPrefix(trimmed, "Couldn't find manifest") {
-			return fmt.Errorf("%s", trimmed) // 直接转发 Scoop 的原话
+			return fmt.Errorf("%s", trimmed)
 		}
 	}
 
