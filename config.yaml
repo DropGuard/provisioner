@@ -1,0 +1,47 @@
+setup_commands:
+  - "wsl --install -d Ubuntu"
+  - 'Invoke-WebRequest -Uri "https://aka.ms/vs/stable/vs_buildtools.exe" -OutFile "$env:TEMP\vs_buildtools.exe"; Start-Process -FilePath "$env:TEMP\vs_buildtools.exe" -ArgumentList "--passive --wait --norestart --nocache --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended" -Wait'
+
+create_desktop_shortcuts: true
+
+apps:
+  - name: git
+  - name: 7zip
+  - name: clash-verge-rev
+    bucket: extras
+    global: true
+  - name: everything
+    bucket: extras
+  - name: pwsh
+  - name: windows-terminal
+    bucket: extras
+  - name: k-lite-codec-pack-basic-np
+    bucket: nonportable
+  - name: googlechrome
+    bucket: extras
+  - name: firefox
+    bucket: extras
+  - name: Readest
+    bucket: extras
+  - name: obsidian
+    bucket: extras
+  - name: ripgrep
+  - name: eza
+    bucket: extras
+  - name: localsend
+    bucket: extras
+  - name: enpass
+    bucket: extras
+  - name: stranslate
+    bucket: extras
+  # languages
+  - name: rustup
+  - name: flutter
+  - name: python
+  # IDEs
+  - name: zed
+  - name: vscode
+    bucket: extras
+  - name: idea-ultimate
+    bucket: extras
+
