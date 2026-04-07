@@ -90,7 +90,7 @@ func main() {
 }
 
 func waitAndExit(code int) {
-	fmt.Println("\n按回车键 (Enter) 退出...")
+	fmt.Println("\nPress Enter to exit...")
 	bufio.NewReader(os.Stdin).ReadBytes('\n')
 	os.Exit(code)
 }
