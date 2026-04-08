@@ -71,6 +71,9 @@ apps:
     desktop_shortcut: true
   # - name: vscode
   #   bucket: extras
+  - name: antigravity
+    bucket: extras
+    desktop_shortcut: true
   - name: idea
     bucket: extras
     desktop_shortcut: true
