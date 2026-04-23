@@ -16,22 +16,6 @@ func isAdmin() bool {
 	return err == nil
 }
 
-func getAdminGroupName() (string, error) {
-	cmd := exec.Command("powershell", "-NoProfile", "-Command", "(New-Object System.Security.Principal.SecurityIdentifier('S-1-5-32-544')).Translate([System.Security.Principal.NTAccount]).Value")
-	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-	out, err := cmd.Output()
-	if err != nil {
-		return "", fmt.Errorf("failed to get admin group name: %v", err)
-	}
-
-	name := strings.TrimSpace(string(out))
-	// Name should be in format "DOMAIN\Group" or "BUILTIN\Group"
-	parts := strings.Split(name, "\\")
-	if len(parts) == 2 {
-		return parts[1], nil
-	}
-	return name, nil
-}
 
 func runCommand(name string, args ...string) error {
 	cmd := exec.Command(name, args...)
@@ -72,17 +56,12 @@ func main() {
 		fmt.Println("[+] User created successfully!")
 	}
 
-	adminGroup, err := getAdminGroupName()
-	if err != nil {
-		fmt.Printf("[-] FATAL: Failed to get the system administrator group name: %v\n", err)
-		fmt.Println("[-] Execution aborted for safety. Press Enter to exit...")
-		fmt.Scanln()
-		os.Exit(1)
-	}
-
 	// Grant the daily account full administrator privileges.
-	fmt.Printf("[*] Adding %s to the Administrators group (%s)...\n", username, adminGroup)
-	err = runCommandHidden("net", "localgroup", adminGroup, username, "/add")
+	// S-1-5-32-544 is the well-known SID for the Administrators group,
+	// permanent and language-independent across all Windows versions.
+	fmt.Printf("[*] Adding %s to the Administrators group...\n", username)
+	err = runCommandHidden("powershell", "-NoProfile", "-Command",
+		fmt.Sprintf("Add-LocalGroupMember -SID 'S-1-5-32-544' -Member '%s'", username))
 	if err != nil {
 		fmt.Printf("[!] Warning: failed to add to Administrators group (may already be a member): %v\n", err)
 	} else {
