@@ -2,14 +2,8 @@ setup_commands:
   - Invoke-WebRequest -Uri "https://aka.ms/vs/stable/vs_buildtools.exe" -OutFile "$env:TEMP\vs_buildtools.exe"; Start-Process -FilePath "$env:TEMP\vs_buildtools.exe" -ArgumentList "--passive --wait --norestart --nocache --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended" -Wait
 
 post_setup_commands:
-  - if (!(Get-Command gemini -ErrorAction SilentlyContinue)) {
-        Write-Host "Installing @google/gemini-cli..."
-        pnpm add -g @google/gemini-cli
-    }
-  - if (!(Get-Command codex -ErrorAction SilentlyContinue)) {
-        Write-Host "Installing @openai/codex..."
-        pnpm add -g @openai/codex
-    }
+  - pnpm add -g @google/gemini-cli
+  - pnpm add -g @openai/codex
 
 apps:
   - name: git
@@ -25,6 +19,9 @@ apps:
     desktop_shortcut: true
   - name: k-lite-codec-pack-basic-np
     bucket: extras
+  - name: diskgenius
+    bucket: extras
+    desktop_shortcut: true
   - name: everything
     bucket: extras
 

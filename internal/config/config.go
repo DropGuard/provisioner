@@ -1,6 +1,8 @@
 package config
 
 import (
+	"bytes"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -19,10 +21,12 @@ type Config struct {
 }
 
 // LoadBytes loads the configuration directly from byte slice.
+// Unknown fields are rejected to prevent silent misconfiguration.
 func LoadBytes(data []byte) (*Config, error) {
 	var cfg Config
-	err := yaml.Unmarshal(data, &cfg)
-	if err != nil {
+	decoder := yaml.NewDecoder(bytes.NewReader(data))
+	decoder.KnownFields(true)
+	if err := decoder.Decode(&cfg); err != nil {
 		return nil, err
 	}
 	return &cfg, nil
