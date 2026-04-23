@@ -16,7 +16,7 @@ jobs:
     name: Build
     runs-on: windows-latest
     permissions:
-      contents: write  # 允许创建 Release 和上传附件
+      contents: write
 
     steps:
       - name: Checkout code
@@ -27,18 +27,30 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Build Windows executable
+      - name: Build provisioner.exe
         run: |
           go build -ldflags="-s -w" -o provisioner.exe ./cmd/provisioner
 
-      - name: Upload artifact
+      - name: Build user-setup.exe
+        run: |
+          go build -ldflags="-s -w" -o user-setup.exe ./cmd/user
+
+      - name: Upload provisioner artifact
         uses: actions/upload-artifact@v4
         with:
           name: provisioner-windows
           path: provisioner.exe
 
+      - name: Upload user-setup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: user-setup-windows
+          path: user-setup.exe
+
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: provisioner.exe
+          files: |
+            provisioner.exe
+            user-setup.exe

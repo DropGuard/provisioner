@@ -70,8 +70,9 @@ apps:
   # IDEs
   - name: zed
     desktop_shortcut: true
-  # - name: vscode
-  #   bucket: extras
+  - name: vscode
+    bucket: extras
+    desktop_shortcut: true
   - name: antigravity
     bucket: extras
     desktop_shortcut: true
