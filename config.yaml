@@ -13,6 +13,7 @@ post_setup_commands:
 
 apps:
   - name: git
+  - name: gh
   - name: 7zip
   - name: clash-verge-rev
     bucket: extras
