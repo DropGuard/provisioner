@@ -45,6 +45,8 @@ apps:
     desktop_shortcut: true
   - name: enpass
     bucket: extras
+  - name: windowsdesktop-runtime-lts
+    bucket: extras
   - name: stranslate
     bucket: extras
     desktop_shortcut: true
