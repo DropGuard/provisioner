@@ -2,8 +2,10 @@ setup_commands:
   - Invoke-WebRequest -Uri "https://aka.ms/vs/stable/vs_buildtools.exe" -OutFile "$env:TEMP\vs_buildtools.exe"; Start-Process -FilePath "$env:TEMP\vs_buildtools.exe" -ArgumentList "--passive --wait --norestart --nocache --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended" -Wait
 
 post_setup_commands:
-  - pnpm add -g @google/gemini-cli
-  - pnpm add -g @openai/codex
+  - npm install -g @google/gemini-cli
+  - npm install -g @openai/codex
+  - irm https://claude.ai/install.ps1 | iex
+
 
 apps:
   - name: git
@@ -49,21 +51,33 @@ apps:
 
   # languages
   - name: rustup
+
   - name: flutter
+
   - name: python
-  - name: nodejs
-  - name: go
-  - name: openjdk
-    bucket: java
-  # dev tools
-  - name: pnpm
   - name: uv
   - name: ruff
+
+  - name: nodejs
+  - name: bun
+  - name: pnpm
+
+  - name: go
+
+  - name: openjdk
+    bucket: java
+
+  # dev tools
+
   - name: protobuf
     bucket: extras
   - name: ripgrep
   - name: eza
     bucket: extras
+  - name: cc-switch
+    bucket: extras
+    desktop_shortcut: true
+
   # IDEs
   - name: zed
     desktop_shortcut: true
