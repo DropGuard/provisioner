@@ -2,8 +2,6 @@ setup_commands:
   - Invoke-WebRequest -Uri "https://aka.ms/vs/stable/vs_buildtools.exe" -OutFile "$env:TEMP\vs_buildtools.exe"; Start-Process -FilePath "$env:TEMP\vs_buildtools.exe" -ArgumentList "--passive --wait --norestart --nocache --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended" -Wait
 
 post_setup_commands:
-  - npm install -g @google/gemini-cli
-  - npm install -g @openai/codex
   - irm https://claude.ai/install.ps1 | iex
 
 
@@ -68,11 +66,13 @@ apps:
 
   - name: openjdk
     bucket: java
+  - name: maven
 
   # dev tools
 
   - name: protobuf
     bucket: extras
+  - name: tokei
   - name: ripgrep
   - name: eza
     bucket: extras
