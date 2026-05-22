@@ -28,15 +28,11 @@ Setting up a fresh Windows machine is split into **two phases** to handle user a
 
 ---
 
-## 🛠️ Local Development & Testing
+## 🛠️ Local Development
 
-If you want to compile, test, or run your local changes (e.g. modified `config.yaml` or custom source code):
+If you want to compile or run your local changes (e.g. modified `config.yaml` or custom source code):
 
-1. **Run Tests**:
-   ```bash
-   make test
-   ```
-2. **Run Phase 1 (Create User)**:
+1. **Run Phase 1 (Create User)**:
    ```bash
    make install-user
    ```
