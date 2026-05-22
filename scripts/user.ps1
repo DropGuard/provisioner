@@ -1,8 +1,8 @@
-# user.ps1 - Bootstrapper to download and run user-[arch].exe
+# scripts/user.ps1 - Bootstrapper to download and run user-[arch].exe
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $isAdmin) {
     Write-Warning "Elevation required. Requesting Administrator privileges..."
-    Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"& { irm https://raw.githubusercontent.com/DropGuard/provisioner/main/user.ps1 | iex }`"" -Verb RunAs
+    Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"& { irm https://raw.githubusercontent.com/DropGuard/provisioner/main/scripts/user.ps1 | iex }`"" -Verb RunAs
     exit
 }
 

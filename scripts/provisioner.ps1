@@ -1,4 +1,4 @@
-# provisioner.ps1 - Bootstrapper to download and run provisioner-[arch].exe
+# scripts/provisioner.ps1 - Bootstrapper to download and run provisioner-[arch].exe
 $arch = "amd64"
 if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") {
     $arch = "arm64"
