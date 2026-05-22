@@ -28,12 +28,24 @@ Setting up a fresh Windows machine is split into **two phases** to handle user a
 
 ---
 
-## 🛠️ Development
+## 🛠️ Local Development & Testing
 
-Build both binaries locally (outputs to the `bin/` directory):
-```bash
-make build
-```
+If you want to compile and run your local changes (e.g. modified `config.yaml` or custom source code):
+
+1. **Build the binaries**:
+   ```bash
+   make build
+   ```
+2. **Run Phase 1 (Create User)**:
+   ```bash
+   make install-user
+   ```
+   *(This builds and automatically launches the local `user.exe` requesting Administrator privileges)*
+3. **Run Phase 2 (Provision Apps)**:
+   Log in to the newly created user account, open a terminal in the project directory, and run:
+   ```bash
+   make install-apps
+   ```
 
 ---
 

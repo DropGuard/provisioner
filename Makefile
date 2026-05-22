@@ -1,7 +1,7 @@
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 LDFLAGS = -s -w -X main.Version=$(VERSION)
 
-.PHONY: build clean test fmt vet lint run-provisioner run-user
+.PHONY: build clean test fmt vet lint install-user install-apps
 
 build:
 	go build -ldflags "$(LDFLAGS)" -o bin/provisioner.exe ./cmd/provisioner
@@ -21,10 +21,8 @@ vet:
 
 lint: fmt vet
 
-run-provisioner:
-	go build -ldflags "$(LDFLAGS)" -o bin/provisioner.exe ./cmd/provisioner
-	./bin/provisioner.exe
+install-user: build
+	powershell -Command "Start-Process bin/user.exe -Verb RunAs"
 
-run-user:
-	go build -ldflags "$(LDFLAGS)" -o bin/user.exe ./cmd/user
-	./bin/user.exe
+install-apps: build
+	./bin/provisioner.exe
