@@ -17,4 +17,5 @@ Write-Host "Downloading provisioner-$arch.exe from GitHub..."
 Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing
 
 Write-Host "Starting system provisioning..."
-Start-Process -FilePath $output -Wait
+& $output
+
