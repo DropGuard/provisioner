@@ -52,8 +52,6 @@ func runProvisioning() error {
 
 	username := "DailyUser"
 
-	fmt.Printf("[*] Creating user %s...\n", username)
-
 	netapi32 := syscall.NewLazyDLL("netapi32.dll")
 	netUserAdd := netapi32.NewProc("NetUserAdd")
 	netLocalGroupAddMembers := netapi32.NewProc("NetLocalGroupAddMembers")
@@ -82,16 +80,15 @@ func runProvisioning() error {
 	// NERR_UserExists is 2224
 	if ret != 0 {
 		if ret == 2224 {
-			fmt.Printf("[!] Warning: user %s already exists (may have been created previously).\n", username)
+			fmt.Printf("[*] User '%s' already exists.\n", username)
 		} else {
 			return fmt.Errorf("failed to create user (error code %d): %v", ret, syscall.Errno(ret))
 		}
 	} else {
-		fmt.Println("[+] User created successfully!")
+		fmt.Printf("[+] Created user '%s'.\n", username)
 	}
 
 	// Resolve the localized group name for Administrators (SID S-1-5-32-544)
-	fmt.Println("[*] Querying localized Administrators group name...")
 	sidStr := "S-1-5-32-544"
 	sid, err := syscall.StringToSid(sidStr)
 	if err != nil {
@@ -114,7 +111,6 @@ func runProvisioning() error {
 	}
 
 	groupNameStr := syscall.UTF16ToString(nameBuf)
-	fmt.Printf("[*] Adding %s to the %s group...\n", username, groupNameStr)
 
 	groupNamePtr, err := syscall.UTF16PtrFromString(groupNameStr)
 	if err != nil {
@@ -137,18 +133,21 @@ func runProvisioning() error {
 	// ERROR_MEMBER_IN_ALIAS is 1378
 	if ret != 0 {
 		if ret == 1378 {
-			fmt.Printf("[!] Warning: %s is already a member of the %s group.\n", username, groupNameStr)
+			fmt.Printf("[*] '%s' is already in the '%s' group.\n", username, groupNameStr)
 		} else {
 			return fmt.Errorf("failed to add user to group (error code %d): %v", ret, syscall.Errno(ret))
 		}
 	} else {
-		fmt.Printf("[+] Successfully added to the %s group!\n", groupNameStr)
+		fmt.Printf("[+] Added '%s' to the '%s' group.\n", username, groupNameStr)
 	}
 
 	fmt.Println("[+] Setup complete!")
-	fmt.Printf("[*] Daily administrator account '%s' has been created (no password).\n", username)
-	fmt.Println("[*] Please log off manually and switch to this account to use it as your daily driver (Start -> Profile -> Sign out).")
-
+	fmt.Println("======================================================================")
+	fmt.Println("IMPORTANT:")
+	fmt.Printf("Daily administrator account '%s' has been configured (no password).\n", username)
+	fmt.Println("Please log off manually and switch to this account to use it:")
+	fmt.Println("👉 Start -> Profile -> Sign out (Log off)")
+	fmt.Println("======================================================================")
 	return nil
 }
 
