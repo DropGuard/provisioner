@@ -4,11 +4,11 @@ A fast, lightweight, and automated system setup tool for Windows written in Go. 
 
 ---
 
-## 🚀 Quick Start (一键装机指南)
+## 🚀 Quick Start
 
 Setting up a fresh Windows machine is split into **two phases** to handle user account creation and account switching lifecycles cleanly.
 
-### Phase 1: Create Daily Administrator Account (阶段一：创建日常工作账户)
+### Phase 1: Create Daily Administrator Account
 1. Log in to your fresh Windows system with the built-in **Administrator** account.
 2. Open **PowerShell** (the script will automatically request Administrator elevation).
 3. Copy and run the following command to run the user creation tool:
@@ -17,7 +17,7 @@ Setting up a fresh Windows machine is split into **two phases** to handle user a
    ```
 4. Follow the prompt to create the account (defaults to `DailyUser`). When prompted, type `y` to log off.
 
-### Phase 2: System Provisioning (阶段二：批量装机)
+### Phase 2: System Provisioning
 1. Log in to your newly created **DailyUser** account.
 2. Open **PowerShell** (runs as a standard user).
 3. Copy and run the following command to start installing Scoop and all configured applications:
