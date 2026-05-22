@@ -38,13 +38,13 @@ jobs:
         run: make build
 
       - name: Upload provisioner artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: provisioner-windows
           path: bin/provisioner.exe
 
       - name: Upload user artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: user-windows
           path: bin/user.exe
