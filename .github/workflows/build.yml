@@ -36,10 +36,7 @@ jobs:
 
       - name: Disable Windows Password Policy (CI only)
         if: matrix.goarch == 'amd64'
-        run: |
-          secedit /export /cfg sec.cfg
-          (Get-Content sec.cfg) -replace 'PasswordComplexity = 1', 'PasswordComplexity = 0' -replace 'MinimumPasswordLength = \d+', 'MinimumPasswordLength = 0' | Set-Content sec.cfg
-          secedit /configure /db secedit.sdb /cfg sec.cfg /areas SECURITYPOLICY
+        run: make disable-password-policy
 
       - name: Test
         # Run tests only on amd64 because windows-latest runners are x64 and cannot execute arm64 test binaries
@@ -48,10 +45,11 @@ jobs:
 
       - name: Build Binaries
         env:
+          VERSION: ${{ github.ref_name || 'dev' }}
           GOARCH: ${{ matrix.goarch }}
-        run: |
-          go build -ldflags "-s -w -X main.Version=${{ github.ref_name || 'dev' }}" -o provisioner-${{ matrix.goarch }}.exe ./cmd/provisioner
-          go build -ldflags "-s -w -X main.Version=${{ github.ref_name || 'dev' }}" -o user-${{ matrix.goarch }}.exe ./cmd/user
+          OUT_DIR: .
+          SUFFIX: -${{ matrix.goarch }}
+        run: make build
 
       - name: Upload provisioner artifact
         uses: actions/upload-artifact@v7
