@@ -44,7 +44,7 @@ func TestIntegrationUserCreation(t *testing.T) {
 		}
 	})
 
-	passPtr, _ := syscall.UTF16PtrFromString("P@ssw0rdCI_123!") // Meets Windows Server default password policy requirements in CI
+	passPtr, _ := syscall.UTF16PtrFromString("") // No password
 	ui := USER_INFO_1{
 		Name:     userPtr,
 		Password: passPtr,
