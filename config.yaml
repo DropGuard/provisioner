@@ -90,3 +90,6 @@ apps:
   - name: idea
     bucket: extras
     desktop_shortcut: true
+  - name: antigravity-ide
+    bucket: extras
+    desktop_shortcut: true
