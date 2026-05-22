@@ -44,7 +44,7 @@ func AddBucket(name string) error {
 	return nil
 }
 
-// ConfigureGitHubToken sets the github_token for scoop. 
+// ConfigureGitHubToken sets the github_token for scoop.
 // It first tries to read from the GITHUB_TOKEN environment variable.
 // If not found, it prompts the user for input.
 func ConfigureGitHubToken() error {
@@ -53,7 +53,7 @@ func ConfigureGitHubToken() error {
 	if token == "" {
 		fmt.Print("No GITHUB_TOKEN found in environment variables.\n")
 		fmt.Print("Enter your GitHub token (or press Enter to skip): ")
-		
+
 		var input string
 		fmt.Scanln(&input)
 		token = strings.TrimSpace(input)

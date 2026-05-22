@@ -117,8 +117,8 @@ func readShortcutEntries(manifestPaths []string) []ShortcutEntry {
 				continue
 			}
 			// s[1] may be a plain name ("Google Chrome") or a path ("JetBrains\\IDEA").
-			folder := filepath.Dir(s[1])  // "JetBrains" or "."
-			name := filepath.Base(s[1])   // "IDEA" or "Google Chrome"
+			folder := filepath.Dir(s[1]) // "JetBrains" or "."
+			name := filepath.Base(s[1])  // "IDEA" or "Google Chrome"
 			if folder == "." {
 				folder = ""
 			}
