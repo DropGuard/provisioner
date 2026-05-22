@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
-	"strings"
 	"syscall"
 	"unsafe"
 
@@ -13,14 +11,14 @@ import (
 
 // Win32 API structures
 type USER_INFO_1 struct {
-	Name         *uint16
-	Password     *uint16
-	PasswordAge  uint32
-	Priv         uint32
-	HomeDir      *uint16
-	Comment      *uint16
-	Flags        uint32
-	ScriptPath   *uint16
+	Name        *uint16
+	Password    *uint16
+	PasswordAge uint32
+	Priv        uint32
+	HomeDir     *uint16
+	Comment     *uint16
+	Flags       uint32
+	ScriptPath  *uint16
 }
 
 type LOCALGROUP_MEMBERS_INFO_3 struct {
@@ -45,13 +43,6 @@ func isAdmin() bool {
 	// Native Win32 check for Administrator privileges
 	ret, _, _ := syscall.NewLazyDLL("shell32.dll").NewProc("IsUserAnAdmin").Call()
 	return ret != 0
-}
-
-func runCommand(name string, args ...string) error {
-	cmd := exec.Command(name, args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
 }
 
 func runProvisioning() error {
@@ -156,20 +147,7 @@ func runProvisioning() error {
 
 	fmt.Println("[+] Setup complete!")
 	fmt.Printf("[*] Daily administrator account '%s' has been created (no password).\n", username)
-	fmt.Println("[*] Log off and switch to this account to use it as your daily driver.")
-	fmt.Println("==================================================")
-	fmt.Print("Do you want to log off now? (y/N): ")
-
-	var response string
-	fmt.Scanln(&response)
-	response = strings.ToLower(strings.TrimSpace(response))
-
-	if response == "y" || response == "yes" {
-		fmt.Println("[*] Logging off...")
-		runCommand("logoff")
-	} else {
-		fmt.Println("[*] Please log off manually later (Start -> Profile -> Sign out).")
-	}
+	fmt.Println("[*] Please log off manually and switch to this account to use it as your daily driver (Start -> Profile -> Sign out).")
 
 	return nil
 }
