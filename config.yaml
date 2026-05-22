@@ -1,5 +1,4 @@
-setup_commands:
-  - Invoke-WebRequest -Uri "https://aka.ms/vs/stable/vs_buildtools.exe" -OutFile "$env:TEMP\vs_buildtools.exe"; Start-Process -FilePath "$env:TEMP\vs_buildtools.exe" -ArgumentList "--passive --wait --norestart --nocache --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended" -Wait
+setup_commands: []
 
 post_setup_commands:
   - irm https://claude.ai/install.ps1 | iex
