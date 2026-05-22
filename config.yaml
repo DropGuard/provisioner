@@ -1,7 +1,6 @@
 post_setup_commands:
   - irm https://claude.ai/install.ps1 | iex
 
-
 apps:
   - name: git
   - name: gh
@@ -76,14 +75,16 @@ apps:
   - name: cc-switch
     bucket: extras
     desktop_shortcut: true
-
+  - name: codex
+    desktop_shortcut: true
+  - name: antigravity
+    bucket: extras
+    desktop_shortcut: true
+  - name: antigravity-cli
   # IDEs
   - name: zed
     desktop_shortcut: true
   - name: vscode
-    bucket: extras
-    desktop_shortcut: true
-  - name: antigravity
     bucket: extras
     desktop_shortcut: true
   - name: idea
