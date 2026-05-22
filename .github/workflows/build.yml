@@ -42,21 +42,26 @@ jobs:
       - name: Build Binaries
         env:
           GOARCH: ${{ matrix.goarch }}
-        run: make build
-
-      - name: Package Release
-        shell: pwsh
         run: |
-          Compress-Archive -Path bin/* -DestinationPath "provisioner-${{ github.ref_name }}-windows-${{ matrix.goarch }}.zip"
+          go build -ldflags "-s -w -X main.Version=${{ github.ref_name || 'dev' }}" -o provisioner-${{ matrix.goarch }}.exe ./cmd/provisioner
+          go build -ldflags "-s -w -X main.Version=${{ github.ref_name || 'dev' }}" -o user-${{ matrix.goarch }}.exe ./cmd/user
 
-      - name: Upload Artifact
+      - name: Upload provisioner artifact
         uses: actions/upload-artifact@v7
         with:
           name: provisioner-windows-${{ matrix.goarch }}
-          path: provisioner-*.zip
+          path: provisioner-${{ matrix.goarch }}.exe
+
+      - name: Upload user artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: user-windows-${{ matrix.goarch }}
+          path: user-${{ matrix.goarch }}.exe
 
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v3
         with:
-          files: provisioner-*.zip
+          files: |
+            provisioner-${{ matrix.goarch }}.exe
+            user-${{ matrix.goarch }}.exe
