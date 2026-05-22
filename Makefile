@@ -22,7 +22,7 @@ vet:
 lint: fmt vet
 
 install-user: build
-	powershell -Command "Start-Process bin/user.exe -Verb RunAs"
+	./bin/user.exe
 
 install-apps: build
 	./bin/provisioner.exe

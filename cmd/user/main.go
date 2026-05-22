@@ -6,14 +6,45 @@ import (
 	"os/exec"
 	"strings"
 	"syscall"
+	"unsafe"
+
+	"github.com/spf13/cobra"
 )
 
+// Win32 API structures
+type USER_INFO_1 struct {
+	Name         *uint16
+	Password     *uint16
+	PasswordAge  uint32
+	Priv         uint32
+	HomeDir      *uint16
+	Comment      *uint16
+	Flags        uint32
+	ScriptPath   *uint16
+}
+
+type LOCALGROUP_MEMBERS_INFO_3 struct {
+	DomainAndName *uint16
+}
+
+var Version = "dev"
+
+var rootCmd = &cobra.Command{
+	Use:           "user",
+	Short:         "User provisioning tool",
+	Long:          "Creates the daily-use Windows account (DailyUser) and assigns it to the local Administrators group natively using Win32 APIs.",
+	Version:       Version,
+	SilenceUsage:  true,
+	SilenceErrors: true,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return runProvisioning()
+	},
+}
+
 func isAdmin() bool {
-	// Simple check for admin rights on Windows
-	cmd := exec.Command("net", "session")
-	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-	err := cmd.Run()
-	return err == nil
+	// Native Win32 check for Administrator privileges
+	ret, _, _ := syscall.NewLazyDLL("shell32.dll").NewProc("IsUserAnAdmin").Call()
+	return ret != 0
 }
 
 func runCommand(name string, args ...string) error {
@@ -23,55 +54,104 @@ func runCommand(name string, args ...string) error {
 	return cmd.Run()
 }
 
-func runCommandHidden(name string, args ...string) error {
-	cmd := exec.Command(name, args...)
-	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-	out, err := cmd.CombinedOutput()
-	if err != nil && len(out) > 0 {
-		fmt.Fprintf(os.Stderr, "%s\n", strings.TrimSpace(string(out)))
-	}
-	return err
-}
-
-var Version = "dev"
-
-func main() {
-	if len(os.Args) > 1 && (os.Args[1] == "-v" || os.Args[1] == "--version") {
-		fmt.Printf("user version %s\n", Version)
-		return
-	}
-
+func runProvisioning() error {
 	if !isAdmin() {
-		fmt.Println("[-] Please run this program as Administrator.")
-		fmt.Println("Press Enter to exit...")
-		fmt.Scanln()
-		os.Exit(1)
+		return fmt.Errorf("Administrator privileges are required to run this command. Please run the terminal as Administrator.")
 	}
 
-	// This is the daily-use account. It will be added to the Administrators group
-	// so it has full privileges, but it is separate from the built-in Administrator
-	// account which we use only for initial system setup.
 	username := "DailyUser"
 
 	fmt.Printf("[*] Creating user %s...\n", username)
-	// Create the account with no password (intentional: single-user personal machine).
-	err := runCommandHidden("net", "user", username, "/add")
+
+	netapi32 := syscall.NewLazyDLL("netapi32.dll")
+	netUserAdd := netapi32.NewProc("NetUserAdd")
+	netLocalGroupAddMembers := netapi32.NewProc("NetLocalGroupAddMembers")
+
+	userPtr, err := syscall.UTF16PtrFromString(username)
 	if err != nil {
-		fmt.Printf("[!] Warning: user creation returned an error (user may already exist): %v\n", err)
+		return fmt.Errorf("failed to process username: %w", err)
+	}
+	passPtr, _ := syscall.UTF16PtrFromString("") // No password
+
+	ui := USER_INFO_1{
+		Name:     userPtr,
+		Password: passPtr,
+		Priv:     1,               // USER_PRIV_USER
+		Flags:    0x0040 | 0x0200, // UF_NORMAL_ACCOUNT | UF_SCRIPT
+	}
+
+	// Call NetUserAdd(servername=nil, level=1, buf, parm_err=nil)
+	ret, _, _ := netUserAdd.Call(
+		0,
+		1,
+		uintptr(unsafe.Pointer(&ui)),
+		0,
+	)
+
+	// NERR_UserExists is 2224
+	if ret != 0 {
+		if ret == 2224 {
+			fmt.Printf("[!] Warning: user %s already exists (may have been created previously).\n", username)
+		} else {
+			return fmt.Errorf("failed to create user (error code %d): %v", ret, syscall.Errno(ret))
+		}
 	} else {
 		fmt.Println("[+] User created successfully!")
 	}
 
-	// Grant the daily account full administrator privileges.
-	// S-1-5-32-544 is the well-known SID for the Administrators group,
-	// permanent and language-independent across all Windows versions.
-	fmt.Printf("[*] Adding %s to the Administrators group...\n", username)
-	err = runCommandHidden("powershell", "-NoProfile", "-Command",
-		fmt.Sprintf("Add-LocalGroupMember -SID 'S-1-5-32-544' -Member '%s'", username))
+	// Resolve the localized group name for Administrators (SID S-1-5-32-544)
+	fmt.Println("[*] Querying localized Administrators group name...")
+	sidStr := "S-1-5-32-544"
+	sid, err := syscall.StringToSid(sidStr)
 	if err != nil {
-		fmt.Printf("[!] Warning: failed to add to Administrators group (may already be a member): %v\n", err)
+		return fmt.Errorf("failed to convert SID: %w", err)
+	}
+
+	var nameLen, domainLen uint32 = 0, 0
+	var sidUse uint32
+	// Call once to get required buffer sizes
+	err = syscall.LookupAccountSid(nil, sid, nil, &nameLen, nil, &domainLen, &sidUse)
+	if err != nil && err != syscall.ERROR_INSUFFICIENT_BUFFER {
+		return fmt.Errorf("failed to lookup group account sizes: %w", err)
+	}
+
+	nameBuf := make([]uint16, nameLen)
+	domainBuf := make([]uint16, domainLen)
+	err = syscall.LookupAccountSid(nil, sid, &nameBuf[0], &nameLen, &domainBuf[0], &domainLen, &sidUse)
+	if err != nil {
+		return fmt.Errorf("failed to lookup group account details: %w", err)
+	}
+
+	groupNameStr := syscall.UTF16ToString(nameBuf)
+	fmt.Printf("[*] Adding %s to the %s group...\n", username, groupNameStr)
+
+	groupNamePtr, err := syscall.UTF16PtrFromString(groupNameStr)
+	if err != nil {
+		return fmt.Errorf("failed to process group name: %w", err)
+	}
+
+	member := LOCALGROUP_MEMBERS_INFO_3{
+		DomainAndName: userPtr,
+	}
+
+	// Call NetLocalGroupAddMembers(servername=nil, groupname, level=3, buf, totalentries=1)
+	ret, _, _ = netLocalGroupAddMembers.Call(
+		0,
+		uintptr(unsafe.Pointer(groupNamePtr)),
+		3,
+		uintptr(unsafe.Pointer(&member)),
+		1,
+	)
+
+	// ERROR_MEMBER_IN_ALIAS is 1378
+	if ret != 0 {
+		if ret == 1378 {
+			fmt.Printf("[!] Warning: %s is already a member of the %s group.\n", username, groupNameStr)
+		} else {
+			return fmt.Errorf("failed to add user to group (error code %d): %v", ret, syscall.Errno(ret))
+		}
 	} else {
-		fmt.Println("[+] Successfully added to the Administrators group!")
+		fmt.Printf("[+] Successfully added to the %s group!\n", groupNameStr)
 	}
 
 	fmt.Println("[+] Setup complete!")
@@ -89,7 +169,14 @@ func main() {
 		runCommand("logoff")
 	} else {
 		fmt.Println("[*] Please log off manually later (Start -> Profile -> Sign out).")
-		fmt.Println("Press Enter to exit...")
-		fmt.Scanln()
+	}
+
+	return nil
+}
+
+func main() {
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprintf(os.Stderr, "[-] Error: %v\n", err)
+		os.Exit(1)
 	}
 }

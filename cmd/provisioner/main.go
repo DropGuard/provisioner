@@ -9,16 +9,23 @@ import (
 	"provisioner"
 	"provisioner/internal/config"
 	"provisioner/internal/scoop"
+
+	"github.com/spf13/cobra"
 )
 
 var Version = "dev"
 
-func main() {
-	if len(os.Args) > 1 && (os.Args[1] == "-v" || os.Args[1] == "--version") {
-		fmt.Printf("provisioner version %s\n", Version)
-		return
-	}
+var rootCmd = &cobra.Command{
+	Use:     "provisioner",
+	Short:   "Windows App Provisioning Tool",
+	Long:    "Automatically installs Scoop, configures environment settings, adds buckets, and provisions configured apps.",
+	Version: Version,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return runProvisioner()
+	},
+}
 
+func runProvisioner() error {
 	fmt.Println("== Windows Provisioning Tool ==")
 
 	fmt.Println("Loading embedded configuration...")
@@ -123,10 +130,17 @@ func main() {
 
 	fmt.Println("Provisioning complete!")
 	waitAndExit(0)
+	return nil
 }
 
 func waitAndExit(code int) {
 	fmt.Println("\nPress Enter to exit...")
 	bufio.NewReader(os.Stdin).ReadBytes('\n')
 	os.Exit(code)
+}
+
+func main() {
+	if err := rootCmd.Execute(); err != nil {
+		os.Exit(1)
+	}
 }
