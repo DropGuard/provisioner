@@ -33,7 +33,14 @@ func runCommandHidden(name string, args ...string) error {
 	return err
 }
 
+var Version = "dev"
+
 func main() {
+	if len(os.Args) > 1 && (os.Args[1] == "-v" || os.Args[1] == "--version") {
+		fmt.Printf("user version %s\n", Version)
+		return
+	}
+
 	if !isAdmin() {
 		fmt.Println("[-] Please run this program as Administrator.")
 		fmt.Println("Press Enter to exit...")

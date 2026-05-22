@@ -13,10 +13,13 @@ on:
 
 jobs:
   build:
-    name: Build and Test
+    name: Build and Test (${{ matrix.goarch }})
     runs-on: windows-latest
     permissions:
       contents: write
+    strategy:
+      matrix:
+        goarch: [amd64, arm64]
 
     steps:
       - name: Checkout code
@@ -32,27 +35,28 @@ jobs:
         run: make lint
 
       - name: Test
+        # Run tests only on amd64 because windows-latest runners are x64 and cannot execute arm64 test binaries
+        if: matrix.goarch == 'amd64'
         run: make test
 
       - name: Build Binaries
+        env:
+          GOARCH: ${{ matrix.goarch }}
         run: make build
 
-      - name: Upload provisioner artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: provisioner-windows
-          path: bin/provisioner.exe
+      - name: Package Release
+        shell: pwsh
+        run: |
+          Compress-Archive -Path bin/* -DestinationPath "provisioner-${{ github.ref_name }}-windows-${{ matrix.goarch }}.zip"
 
-      - name: Upload user artifact
+      - name: Upload Artifact
         uses: actions/upload-artifact@v7
         with:
-          name: user-windows
-          path: bin/user.exe
+          name: provisioner-windows-${{ matrix.goarch }}
+          path: provisioner-*.zip
 
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v3
         with:
-          files: |
-            bin/provisioner.exe
-            bin/user.exe
+          files: provisioner-*.zip

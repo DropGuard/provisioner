@@ -11,7 +11,14 @@ import (
 	"provisioner/internal/scoop"
 )
 
+var Version = "dev"
+
 func main() {
+	if len(os.Args) > 1 && (os.Args[1] == "-v" || os.Args[1] == "--version") {
+		fmt.Printf("provisioner version %s\n", Version)
+		return
+	}
+
 	fmt.Println("== Windows Provisioning Tool ==")
 
 	fmt.Println("Loading embedded configuration...")
