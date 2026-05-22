@@ -1,5 +1,3 @@
-setup_commands: []
-
 post_setup_commands:
   - irm https://claude.ai/install.ps1 | iex
 
