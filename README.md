@@ -28,33 +28,12 @@ Setting up a fresh Windows machine is split into **two phases** to handle user a
 
 ---
 
-## 🛠️ Development & Compilation
+## 🛠️ Development
 
-The project uses a standard `Makefile` for local development.
-
-### Local Makefile Targets:
-* **Build both tools**:
-  ```bash
-  make build
-  ```
-  *(Binaries are compiled into the `bin/` directory)*
-* **Clean up build artifacts**:
-  ```bash
-  make clean
-  ```
-* **Run unit tests**:
-  ```bash
-  make test
-  ```
-* **Format & Lint**:
-  ```bash
-  make lint
-  ```
-* **Run components directly**:
-  ```bash
-  make run-provisioner
-  make run-user
-  ```
+Build both binaries locally (outputs to the `bin/` directory):
+```bash
+make build
+```
 
 ---
 
