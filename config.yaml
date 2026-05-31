@@ -1,6 +1,3 @@
-post_setup_commands:
-  - irm https://claude.ai/install.ps1 | iex
-
 apps:
   - name: git
   - name: gh
@@ -75,12 +72,16 @@ apps:
   - name: cc-switch
     bucket: extras
     desktop_shortcut: true
+  
   - name: codex
     desktop_shortcut: true
   - name: antigravity
     bucket: extras
     desktop_shortcut: true
-  - name: antigravity-cli
+  - name: opencode-desktop
+    bucket: extras
+    desktop_shortcut: true    
+  
   # IDEs
   - name: zed
     desktop_shortcut: true
@@ -90,6 +91,7 @@ apps:
   - name: idea
     bucket: extras
     desktop_shortcut: true
-  - name: antigravity-ide
-    bucket: extras
-    desktop_shortcut: true
+  # - name: antigravity-ide
+  #   bucket: extras
+  #   desktop_shortcut: true
+
